@@ -35,6 +35,9 @@ This project is using the MERN stack:
 <br/>
 <br/>
 The database is in the cloud (MongoDB Atlas)
+<br/>
 Mongoose is used to deal with the mongoDB database
+<br/>
 Autentification tokens are manage by Jason Web Token
+<br/>
 Real time transmission for drawing and chating is achieved thanks to Socket.io
