@@ -1,0 +1,10 @@
+ul {
+    top: 10px;
+    position:relative;
+    padding: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+li {
+    width : 350px;
+}
