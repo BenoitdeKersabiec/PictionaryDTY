@@ -12,7 +12,7 @@ import { contextUserData } from '../../Context'
 
 import 'rodal/lib/rodal.css';
 
-const ioAdress = 'http://localhost:7001';
+const ioAdress = process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SOCKET_PORT;
 const canvasWidth = 450;
 const canvasHeight = 450
 

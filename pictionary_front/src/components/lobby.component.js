@@ -27,7 +27,7 @@ export default class Lobby extends Component {
         }
         this.setState({token: token})
         
-        axios.get('http://localhost:7000/lobby', {
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT +  '/lobby', {
             params: {
             token: token
             }})
@@ -93,7 +93,7 @@ export default class Lobby extends Component {
     }
 
     newParty(e){
-        axios.get('http://localhost:7000/newparty', {
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/newparty', {
             params: {
               token: this.state.token
             }})
@@ -114,8 +114,7 @@ export default class Lobby extends Component {
     }
 
     refresh(e){
-        
-        axios.get('http://localhost:7000/lobby', {
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/lobby', {
             params: {
             token: this.state.token
             }})

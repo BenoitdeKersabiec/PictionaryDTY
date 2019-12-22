@@ -37,7 +37,7 @@ export default withRouter(class Words extends Component {
                 this.setState({token: token, isAdmin: data.isAdmin})
     
            
-                axios.get('http://localhost:7000/word/words', {
+                axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/word/words', {
                     params: {
                     token: token
                     }})
@@ -70,7 +70,7 @@ export default withRouter(class Words extends Component {
     }
 
     onClickDelete(wordId){
-        axios.get('http://localhost:7000/word/delete', {
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/word/delete', {
             params: {
               token: this.state.token,
               wordId: wordId
@@ -92,10 +92,10 @@ export default withRouter(class Words extends Component {
             word: this.state.newWord
         }
         if (newWord.word !==''){
-            axios.post('http://localhost:7000/word/newword', newWord)
+            axios.post(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT +  '/word/newword', newWord)
             .then(res => {
                 if (res.data.msg === 'success'){
-                    axios.get('http://localhost:7000/word/words', {
+                    axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT +  '/word/words', {
                         params: {
                         token: this.state.token
                         }})

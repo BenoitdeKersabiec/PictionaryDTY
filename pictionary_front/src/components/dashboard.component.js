@@ -37,7 +37,7 @@ export default class Dashboard extends Component {
 
             this.setState({token: token, isAdmin: data.isAdmin})
 
-            axios.get('http://localhost:7000/dash', {
+            axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/dash', {
                 params: {
                 token: token
                 }})
@@ -58,7 +58,7 @@ export default class Dashboard extends Component {
     }
 
     newParty(e){
-        axios.get('http://localhost:7000/newparty', {
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/newparty', {
             params: {
               token: this.state.token
             }})
@@ -130,12 +130,12 @@ export default class Dashboard extends Component {
     }
 
     onClickDelete(partyID){
-        axios.get('http://localhost:7000/delete', {
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/delete', {
             params: {
               token: this.state.token,
               partyID: partyID
             }}).then(() => {
-                axios.get('http://localhost:7000/dash', {
+                axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/dash', {
                     params: {
                     token: this.state.token
                     }})

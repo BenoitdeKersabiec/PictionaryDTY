@@ -24,6 +24,7 @@ Ensure you have nodeJS installed (version 10.18.0 or hire)
 6. Run ```npm install```
 7. Run ```npm run start```
 8. Once it has start, go to [localhost:3000](https://localhost:3000/)
+9. To launch the process on a local network, change the server address in /pictionary_front/.env to your disired IP adress
 
 ## Tech Used
 

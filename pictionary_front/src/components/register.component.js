@@ -60,7 +60,7 @@ export default class Register extends Component {
       password2: this.state.password2,
     };
 
-    axios.post("http://localhost:7000/users/register", newUser)
+    axios.post(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT +  "/users/register", newUser)
         .then((res) => {
           if (res.data.msg === "success") {
             this.context.setFlashMsg({type: 'success', msg: "You are registered, you can now log in"})
@@ -168,4 +168,3 @@ export default class Register extends Component {
     );
   }
 }
-// &&(this.state.password2 === this.state.password) 

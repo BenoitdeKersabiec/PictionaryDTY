@@ -40,7 +40,7 @@ export default class Login extends Component {
             password: this.state.password
         };
 
-        axios.post('http://localhost:7000/users/login', user)
+        axios.post(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/users/login', user)
         .then(res => {
             if (res.data.msg === 'success'){
                 this.context.setToken(res.data.token)
