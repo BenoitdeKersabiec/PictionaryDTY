@@ -23,5 +23,5 @@ Needed: nodeJS installed (version 10.18.0 or hire)
 5. Go in the frontend folder
 6. Run ```npm install```
 7. Run ```npm run start```
-8. In your browser, go to [a link](https://localhost:3000/)
+8. In your browser, go to [localhost:3000](https://localhost:3000/)
 
