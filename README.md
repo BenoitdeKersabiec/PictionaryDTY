@@ -17,10 +17,10 @@ A game globally end when one player hits 500 points.
 Ensure you have nodeJS installed (version 10.18.0 or heigher)
 
 1. Clone the repository
-2. Go in the backend folder
+2. Go in the pictionary_back folder
 3. Run ```npm install```
 4. Run ```node server.js```
-5. Go in the frontend folder
+5. Go in the pictionary_front folder
 6. Run ```npm install```
 7. Run ```npm run start```
 8. Once it has start, go to [localhost:3000](https://localhost:3000/)
@@ -42,3 +42,5 @@ Mongoose is used to deal with the mongoDB database
 Autentification tokens are manage by Jason Web Token
 <br/>
 Real time transmission for drawing and chating is achieved thanks to Socket.io
+<br/>
+Linter used is ESlint
