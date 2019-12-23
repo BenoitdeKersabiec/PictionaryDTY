@@ -48,5 +48,7 @@ Linter used is ESlint
 ## Details
 
 To log in as an admin, use:
+<br/>
 email: admin@admin
+<br/>
 password: adminSession
