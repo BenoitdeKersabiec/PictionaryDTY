@@ -1,11 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const session = require("express-session");
 var jwtUtils = require('./config/jwt.utils');
 require('dotenv').config();
 
-const gameDuration = 90
+
 
 // create the app
 const app = express();
@@ -62,7 +61,7 @@ class GameCache{
     getId() {
         return this._id;
     }
-    resetTimer(n) {
+    setTimer(n) {
          this._timer = n;
     }
     decrementTimer() {
@@ -78,10 +77,10 @@ class GameCache{
 //---------SocketIO Management--------------
 server.listen(7001)
 
-// consts
+// consts for the game
 const games = {};
 const maxScore = 500;
-
+const gameDuration = 90
 
 // import models
 const Game = require('./models/Game');
@@ -96,15 +95,14 @@ io.on('connection', socket => {
 
         if(data.token){
             if(jwtUtils.verifyToken(data.token) != null){
-                // get user data from token
                 var user = jwtUtils.getUserData(data.token);
-                
                 if (!Object.keys(games).includes(gameID)){
                     // new game
                     games[gameID] = new GameCache();
                 } else {
-                    // inform user from game data
+                    // the game already exists, inform user from game data
                     io.to(socket.id).emit('hasStarted', {hasStarted: games[gameID].hasStarted})
+                    io.to(socket.id).emit('gamePaused', {isPaused: true, name: games[gameID].getDrawing().name})
                     if (games[gameID].word.length >0){
                         io.to(socket.id).emit('setWord', {word: games[gameID].word})
                     }
@@ -116,6 +114,8 @@ io.on('connection', socket => {
                         });
                     }
                 }
+                
+
                 // add player in DerverCache/SocketRooms/DataBase
                 games[gameID].addPlayers({name: user.name, socketID: socket.id, score:0, guessed: false, _id:user._id})
                 socket.join(gameID)
@@ -210,8 +210,12 @@ io.on('connection', socket => {
             for(i=0; i<game._players.length; i++){
                 const player= game._players[i]
                 if (player.socketID === socket.id){
-                    // We find the player
+                    // We found the player
                     games[gameID]._players.splice(i,1);
+                    // if the leaving player is the drawer, we directly go to the next round
+                    if (socket.id === games[gameID].getDrawing().socketID){
+                        games[gameID].setTimer(1)
+                    }
                     Game.findById(gameID, (err, gamedb) => {
                         if (gamedb){
                             // we delete the player from the game in the database
@@ -261,7 +265,7 @@ io.on('connection', socket => {
         // start a new round
         game.isPaused = false;
         io.to(gameID).emit('gamePaused', {isPaused: false})
-        game.resetTimer(gameDuration);
+        game.setTimer(gameDuration);
         game._history= [];
         game._players.forEach(function(player){
             player.guessed = false;

@@ -81,22 +81,44 @@ router.get('/lobby', (req,res) => {
     
 });
 
-// when a user want to join a game
+// when a user want to join a game 
 router.get('/joingame', (req,res) => {
+
     const token = req.query.token;
     const gameID = req.query.gameID;
     if(token){
         if(jwtUtils.verifyToken(token) != null){
             var user = jwtUtils.getUserData(req.query.token)
             Game.findById(gameID).then(game => {
-                if (game.isEnded){
-                    // the game has Ended, we send to the user an up to date version of his games
+                var failure =false;
+                var msg = ''
+                if (game){
+                    // Check if the player isn't already in the room
+                    const players = game.players;
+                    players.forEach(player => {
+                        if (player.id === user._id){
+                            failure = true;
+                            msg = 'User already in this game'
+                        }
+                    })
+                    // Check if the room is steal available
+                    if (game.isEnded){
+                        failure = true;
+                        msg= 'The room is closed, the rooms you are now seeing have been refreshed'
+                    } 
+                } else {
+                    failure = true;
+                    msg= "The room doesn't exist anymore, the rooms you are now seeing have been refreshed"
+                }
+                // we send an update of the games according to where the req come from
+                if (failure){
                     if (req.query.from === 'dashboard'){
                         if (user.isAdmin){
                             Game.find().then(games => {
                                 res.json({
                                     type: 'failure',
-                                    games: games
+                                    games: games,
+                                    msg: msg
                                 })
                             })
                         } else {
@@ -104,7 +126,8 @@ router.get('/joingame', (req,res) => {
                             .then(games => {
                                 res.json({
                                     type: 'failure',
-                                    games: games
+                                    games: games,
+                                    msg: msg
                                 })})
                         }
                     }
@@ -112,13 +135,14 @@ router.get('/joingame', (req,res) => {
                         Game.find({isEnded: false}).then(games => {
                             res.json({
                                 type: 'failure',
-                                games: games
+                                games: games,
+                                msg: msg
                             });
                         })
                     }
                 } else {
                     //the game is available
-                    res.json({type: 'success', parties: []})
+                    res.json({type: 'success', parties: [], msg:''})
                 }
             })
         }

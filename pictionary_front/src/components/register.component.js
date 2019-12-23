@@ -80,11 +80,17 @@ export default class Register extends Component {
   }
 
   displayAlert(){
-    return (
-    <div class={(`alert alert-${this.context.flashMsg.type}`)} role="alert">
-      {this.context.flashMsg.msg}
-    </div>)
-  }
+    if(this.context.flashMsg.msg){
+        return (
+                <div className={(`alert alert-${this.context.flashMsg.type}`)} role="alert">
+                {this.context.flashMsg.msg}
+                </div>
+            )
+    } else {
+        return <div></div>
+    }
+    
+}
 
   render() {
     return (
@@ -99,7 +105,7 @@ export default class Register extends Component {
             {this.displayAlert()}
             <form onSubmit={this.onSubmit}>
               <div className="form-group">
-                <label for="name">Username</label>
+                <label htmlFor="name">Username</label>
                 <input type="text"
                   required
                   className="form-control"
@@ -109,7 +115,7 @@ export default class Register extends Component {
                 {this.state.name?'':<small className="text-danger">Can't be empty</small>}
               </div>
               <div className="form-group">
-                <label for="email">Email</label>
+                <label htmlFor="email">Email</label>
                 <input type="email"
                   required
                   className="form-control"
@@ -120,7 +126,7 @@ export default class Register extends Component {
                 <small className="text-danger">Email invalid</small>}
               </div>
               <div className="form-group">
-                <label for="password">Password</label>
+                <label htmlFor="password">Password</label>
                 <input type="password"
                   required
                   className="form-control"
@@ -131,7 +137,7 @@ export default class Register extends Component {
                 
               </div>
               <div className="form-group">
-                <label for="password2">Confirm Password</label>
+                <label htmlFor="password2">Confirm Password</label>
                 <input type="password"
                   required
                   className="form-control"

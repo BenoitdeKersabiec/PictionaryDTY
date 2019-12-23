@@ -82,16 +82,18 @@ export default class Lobby extends Component {
             params: {
             token: this.state.token,
             gameID: gameID,
-            from: 'lobby'
+            from: 'dashboard'
             }})
         .then(res => {
             if (res.data.type === 'success'){
                 this.context.setGameID(gameID);
+                this.context.setFlashMsg({});
                 this.props.history.push("/ingame/")
             } else {
                 this.setState({
                     games: res.data.games
                 })
+                this.context.setFlashMsg({type: 'warning', msg:res.data.msg});
             }
 
         }
@@ -109,7 +111,7 @@ export default class Lobby extends Component {
         } else {
             sentence = n.toString() + ' games'
         }
-        return <h4 style={{paddingTop: '10px'}}>There are currently {sentence} available</h4>
+        return <h4>There are currently {sentence} available</h4>
     }
 
     newGame(e){
@@ -119,6 +121,7 @@ export default class Lobby extends Component {
             }})
         .then(res => {
             this.context.setGameID(res.data.gameID);
+            this.context.setFlashMsg({});
             this.props.history.push("/ingame")
         }
         )
@@ -129,6 +132,7 @@ export default class Lobby extends Component {
 
 
     dashboard(e){
+        this.context.setFlashMsg({});
         this.props.history.push("/dashboard")
     }
 
@@ -147,6 +151,19 @@ export default class Lobby extends Component {
         })
     }
 
+    displayAlert(){
+        if(this.context.flashMsg.msg){
+            return (
+                    <div className={(`alert alert-${this.context.flashMsg.type}`)} role="alert">
+                    {this.context.flashMsg.msg}
+                    </div>
+                )
+        } else {
+            return <div></div>
+        }
+        
+    }
+
     render() {
 
         return (
@@ -163,8 +180,8 @@ export default class Lobby extends Component {
                             
                         </div>
                         <div className='row' style={{paddingTop: '1%'}}>
-                            <button type="button" class="btn btn-success btn-block" onClick={this.refresh}>
-                                <span class="glyphicon glyphicon-refresh">Refresh</span> 
+                            <button type="button" className="btn btn-success btn-block" onClick={this.refresh}>
+                                <span className="glyphicon glyphicon-refresh">Refresh</span> 
                             </button>
                         </div>
                     </div>
@@ -179,11 +196,11 @@ export default class Lobby extends Component {
                 </div>
                 </div>
                 </div>
-                
-            <div>
-                { this.numberGame() }
-                { this.gameList() }
-            </div>
+                <div style={{paddingTop: '10px'}}>
+                    {this.displayAlert()}
+                    { this.numberGame() }
+                    { this.gameList() }
+                </div>
             </div>
         )
     }

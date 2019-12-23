@@ -38,7 +38,7 @@ export default withRouter(class Words extends Component {
             } else {
                 // only admin are here
                 this.setState({token: token, isAdmin: data.isAdmin})
-                
+
                 axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/word/words', {
                     params: {
                     token: token
@@ -59,9 +59,9 @@ export default withRouter(class Words extends Component {
         return(
             this.state.words.map(word => {
                 return (
-                    <li className="list-group-item">
+                    <li className="list-group-item" key={word._id}>
                         {word.word}
-                        <button type="button" class="close" aria-label="Close" onClick={() => this.onClickDelete(word._id)}>
+                        <button type="button" className="close" aria-label="Close" onClick={() => this.onClickDelete(word._id)}>
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </li>

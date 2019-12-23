@@ -15,7 +15,7 @@ const PlayerList = ({playerList}) => {
       </thead>
       <tbody>
         {playerList.map((player, index) =>(
-          <tr>
+          <tr key={player._id}>
             <td >{player.name}</td>
             <td >{player.score}</td>
           </tr>

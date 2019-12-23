@@ -85,9 +85,13 @@ export default class Ingame extends Component {
         this.socket.on("hasStarted", data => this.setState({hasStarted: data.hasStarted}))
 
         this.socket.on("gamePaused", data => {
-
-            const displayCtx = this.display.current.getContext('2d');
-            displayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            try {
+                const displayCtx = this.display.current.getContext('2d');
+                displayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            } catch (error){
+                
+            }
+            
             this.setState({isPaused: data.isPaused});
             if (data.name){
                 this.setState({DrawerName: data.name})
@@ -379,7 +383,7 @@ export default class Ingame extends Component {
             </div>
             </div>
             
-            <Rodal visible={this.state.isPaused} showCloseButton={false} customStyles={{backgroundColor:'#333'}} measure= 'px' height='100' width='500'>
+            <Rodal visible={this.state.isPaused && this.state.hasStarted} showCloseButton={false} customStyles={{backgroundColor:'#333'}} measure= 'px' height={100} width={500} onClose={()=>{}}>
                 {this.state.isDrawing ?
                 <div>
                     <h4>Choose a word</h4>
@@ -409,8 +413,8 @@ export default class Ingame extends Component {
                 </div>
                 :<h4>{this.state.DrawerName} is choosing a word</h4>}
                 </Rodal>
-            <Rodal visible={this.state.isEnded} showCloseButton={false} measure='px' height={(200 + this.state.players.length*50).toString()} customStyles={{backgroundColor:'#333'}}>
-                <p>{this.displayWinner()}</p>
+            <Rodal visible={this.state.isEnded} showCloseButton={false} measure='px' height={(200 + this.state.players.length*50)} customStyles={{backgroundColor:'#333'}} onClose={()=>{}}>
+                {this.displayWinner()}
                 <PlayerList playerList={this.state.players} />
                 <button type="button" className="btn btn-primary" onClick={() => {
                     this.socket.disconnect();

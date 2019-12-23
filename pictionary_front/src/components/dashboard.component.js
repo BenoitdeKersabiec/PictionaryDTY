@@ -54,6 +54,7 @@ export default class Dashboard extends Component {
 
     onClickLogout(e){
         this.context.setToken("");
+        this.context.setFlashMsg({});
         this.props.history.push("/")
     }
 
@@ -64,6 +65,7 @@ export default class Dashboard extends Component {
             }})
         .then(res => {
             this.context.setGameID(res.data.gameID);
+            this.context.setFlashMsg({});
             this.props.history.push("/ingame")
         }
         )
@@ -73,6 +75,7 @@ export default class Dashboard extends Component {
     }
 
     Lobby(e){
+        this.context.setFlashMsg({});
         this.props.history.push("/lobby")
     }
 
@@ -94,7 +97,7 @@ export default class Dashboard extends Component {
         return (
             this.state.games.map(game => {
             return (
-                <div style={{paddingBottom: '10px'}}>
+                <div style={{paddingBottom: '10px'}} key={game._id}>
                 <div className="card bg-light">
                     <div className="card-header ">
                         {this.gamePlayers(game)}
@@ -134,11 +137,13 @@ export default class Dashboard extends Component {
         .then(res => {
             if (res.data.type === 'success'){
                 this.context.setGameID(gameID);
+                this.context.setFlashMsg({});
                 this.props.history.push("/ingame/")
             } else {
                 this.setState({
                     games: res.data.games
                 })
+                this.context.setFlashMsg({type: 'warning', msg:res.data.msg});
             }
 
         }
@@ -188,7 +193,20 @@ export default class Dashboard extends Component {
             } else {
                 sentence = n.toString() + ' games'
             }
-            return <h4 style={{paddingTop: '10px'}}>You have created {sentence} </h4>
+            return <h4>You have created {sentence} </h4>
+        }
+        
+    }
+
+    displayAlert(){
+        if(this.context.flashMsg.msg){
+            return (
+                    <div className={(`alert alert-${this.context.flashMsg.type}`)} role="alert">
+                    {this.context.flashMsg.msg}
+                    </div>
+                )
+        } else {
+            return <div></div>
         }
         
     }
@@ -221,7 +239,10 @@ export default class Dashboard extends Component {
                             <button 
                             type="button" 
                             className="btn btn-secondary btn-block" 
-                            onClick={() => this.props.history.push("/words")}>
+                            onClick={() => {
+                                this.context.setFlashMsg({});
+                                this.props.history.push("/words")
+                            }}>
                                 Manage Words
                             </button>
                         </div>}
@@ -238,10 +259,11 @@ export default class Dashboard extends Component {
                 </div>
                 </div>
                 </div>
-
-                <p>{ this.numberGame() }</p>
-                <p>{ this.gameCards() }</p>
-                
+                <div style={{paddingTop: '10px'}}>
+                    { this.displayAlert() }
+                    { this.numberGame() }
+                    { this.gameCards() }
+                </div>
             </div>
         )
     }

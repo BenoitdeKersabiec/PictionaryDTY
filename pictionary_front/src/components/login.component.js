@@ -55,11 +55,17 @@ export default class Login extends Component {
     }
 
     displayAlert(){
-        return (
-        <div class={(`alert alert-${this.context.flashMsg.type}`)} role="alert">
-          {this.context.flashMsg.msg}
-        </div>)
-      }
+        if(this.context.flashMsg.msg){
+            return (
+                    <div className={(`alert alert-${this.context.flashMsg.type}`)} role="alert">
+                    {this.context.flashMsg.msg}
+                    </div>
+                )
+        } else {
+            return <div></div>
+        }
+        
+    }
 
     render(){
         return(
@@ -70,7 +76,7 @@ export default class Login extends Component {
                     {this.displayAlert()}
                     <form onSubmit={this.onSubmit}>
                         <div className="form-group">
-                        <label for="email">Email</label>
+                        <label htmlFor="email">Email</label>
                         <input  type="email"
                             required
                             className="form-control"
@@ -79,7 +85,7 @@ export default class Login extends Component {
                             />
                         </div>
                         <div className="form-group">
-                        <label for="password">Password</label>
+                        <label htmlFor="password">Password</label>
                         <input  type="password"
                             required
                             className="form-control"
