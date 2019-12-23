@@ -16,6 +16,7 @@ const canvasWidth = 450;
 const canvasHeight = 450
 
 export default class Ingame extends Component {
+    // eslint-disable-next-line
     static contextType = contextUserData
 
     constructor(props) {
@@ -78,11 +79,14 @@ export default class Ingame extends Component {
 
         this.socket.emit('new-user', {token: token, gameID: gameID})
 
-        this.socket.on("newChatMessage", ({ message })=> {
-            this.setState({messages: [message,...this.state.messages]})
+        this.socket.on("newChatMessage", (message)=> {
+            this.setState({messages: [message ,...this.state.messages]})
         });
 
-        this.socket.on("hasStarted", data => this.setState({hasStarted: data.hasStarted}))
+        this.socket.on("hasStarted", data => {
+            console.log(data.hasStarted)
+            this.setState({hasStarted: data.hasStarted})
+        })
 
         this.socket.on("gamePaused", data => {
             try {
@@ -352,7 +356,7 @@ export default class Ingame extends Component {
                             </div>
                         </div>
                         <div className='row' style={{paddingTop: '10px'}}>
-                            <h8>Width</h8>
+                            <h6>Width</h6>
                             <input 
 
                             className='custom-range'

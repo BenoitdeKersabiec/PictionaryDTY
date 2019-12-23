@@ -1,10 +1,12 @@
 // Imports
+// eslint-disable-next-line
 var jwt = require('jsonwebtoken');
 
 const JWT_SIGN_SECRET = 'lfvlfcvsfvdf5gd8ju6khb1q9egsmfdoijlogkjbkdhn8n91sgfd1v6f8gbOQRFFB25GBFGB6WF68gbfgndg68xcs6re8fqdq1';
 
 
 // Exported functions
+// eslint-disable-next-line
 module.exports = {
     // generate a token for a user
     generateTokenForUser: function(userData){
@@ -30,7 +32,9 @@ module.exports = {
                     username = jwtToken.username;
                     isAdmin = jwtToken.isAdmin;
                 } 
-            } catch(err){}
+            } catch(err){
+                console.log(err)
+            }
         }
         return {_id: userId, name: username, isAdmin: isAdmin};
     },

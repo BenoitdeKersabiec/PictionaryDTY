@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 const mongoose = require('mongoose');
 
 const GameSchema = new mongoose.Schema({
@@ -30,10 +31,7 @@ const GameSchema = new mongoose.Schema({
     }
 });
 
-function memberLimit(val){
-    return val.length <=10
-};
-
 const Game = mongoose.model('Game', GameSchema);
 
-module.exports = Game;
+// eslint-disable-next-line
+module.exports = Game

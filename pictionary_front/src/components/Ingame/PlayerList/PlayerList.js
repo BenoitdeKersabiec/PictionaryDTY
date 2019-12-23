@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import React from "react";
 
 const PlayerList = ({playerList}) => {
@@ -14,7 +15,7 @@ const PlayerList = ({playerList}) => {
         </tr>
       </thead>
       <tbody>
-        {playerList.map((player, index) =>(
+        {playerList.map((player) =>(
           <tr key={player._id}>
             <td >{player.name}</td>
             <td >{player.score}</td>

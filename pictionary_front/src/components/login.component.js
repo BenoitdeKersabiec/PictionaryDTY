@@ -3,6 +3,7 @@ import axios from 'axios';
 import { contextUserData } from '../Context'
 
 export default class Login extends Component {
+    // eslint-disable-next-line
     static contextType = contextUserData
     constructor(props){
         super(props);

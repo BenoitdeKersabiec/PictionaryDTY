@@ -1,13 +1,17 @@
+// eslint-disable-next-line
 const express= require("express");
 const router = express.Router();
+// eslint-disable-next-line
 const bcrypt = require('bcryptjs');
+// eslint-disable-next-line
 var jwtUtils = require('../config/jwt.utils');
 
 // User model
+// eslint-disable-next-line
 const User = require('../models/User');
 
 // Register Handler
-router.route('/register').post((req,res, next) => {
+router.route('/register').post((req,res) => {
 
     const name = req.body.name;
     const email = req.body.email;
@@ -60,7 +64,7 @@ router.route('/register').post((req,res, next) => {
                         newUser.password = hash;
                         //Save newUser
                         newUser.save()
-                        .then(user => {
+                        .then(() => {
                             res.json({msg: 'success'});
                         })
                         .catch(err => console.log(err))
@@ -94,4 +98,5 @@ router.post('/login', (req,res)=>{
     //res.json({msg: 'success'});
 });
 
+// eslint-disable-next-line
 module.exports = router;

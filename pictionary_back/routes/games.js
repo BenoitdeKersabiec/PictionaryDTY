@@ -1,9 +1,13 @@
+// eslint-disable-next-line
 const express= require("express");
 const router = express.Router();
+// eslint-disable-next-line
 var jwtUtils = require('../config/jwt.utils');
+// eslint-disable-next-line
 var mongoose = require('mongoose');
 
 // Game model
+// eslint-disable-next-line
 const Game = require('../models/Game');
 
 
@@ -150,5 +154,5 @@ router.get('/joingame', (req,res) => {
 
     
 })
-
+// eslint-disable-next-line
 module.exports = router;

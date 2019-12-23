@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
@@ -25,4 +26,5 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema);
 
+// eslint-disable-next-line
 module.exports = User;

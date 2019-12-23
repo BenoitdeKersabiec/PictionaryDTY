@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import React, {Component} from "react";
 
 export default class Tool extends Component {

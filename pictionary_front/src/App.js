@@ -1,5 +1,7 @@
+// eslint-disable-next-line
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+// eslint-disable-next-line
 import {BrowserRouter as Router, Route} from "react-router-dom";
 import "bootswatch/dist/darkly/bootstrap.min.css";
 
@@ -11,6 +13,7 @@ import DashBoard from "./components/dashboard.component";
 import Lobby from "./components/lobby.component";
 import Ingame from "./components/Ingame/Ingame";
 import Words from "./components/words.component";
+// eslint-disable-next-line
 import {UserData} from "./Context";
 
 function App() {

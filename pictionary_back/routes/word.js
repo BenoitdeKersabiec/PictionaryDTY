@@ -1,8 +1,11 @@
+// eslint-disable-next-line
 const express= require("express");
 const router = express.Router();
+// eslint-disable-next-line
 var jwtUtils = require('../config/jwt.utils');
 
 // Word model
+// eslint-disable-next-line
 const Word = require('../models/Word');
 
 // Create new word
@@ -50,4 +53,5 @@ router.get('/delete', (req,res) => {
     }
 })
 
+// eslint-disable-next-line
 module.exports = router;

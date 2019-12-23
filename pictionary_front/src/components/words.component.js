@@ -9,6 +9,7 @@ import './addtop.css'
 
 // Word Manager for the admins
 export default withRouter(class Words extends Component {
+    // eslint-disable-next-line
     static contextType = contextUserData
 
     constructor(props){
@@ -56,17 +57,63 @@ export default withRouter(class Words extends Component {
     }
 
     displayWords(e){
+        const words = this.state.words;
+        // we display the words in three columns
+        const leftCol = [];
+        const rightCol = [];
+        const midCol = [];
+        for (var i = 0; i< words.length; i++){
+            const word = words[i]
+            if (i%3 === 0){
+                leftCol.push(word);
+            }
+            if (i%3 === 1){
+                midCol.push(word);
+            }
+            if (i%3 === 2){
+                rightCol.push(word);
+            }
+
+        }
         return(
-            this.state.words.map(word => {
-                return (
-                    <li className="list-group-item" key={word._id}>
-                        {word.word}
-                        <button type="button" className="close" aria-label="Close" onClick={() => this.onClickDelete(word._id)}>
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </li>
-                )
-            })
+            <div className='row'>
+                <div className='column' style={{width:'33%', paddingLeft: '20px'}}>
+                    {leftCol.map(word => {
+                        return (
+                            <li className="list-group-item" key={word._id}>
+                                {word.word}
+                                <button type="button" className="close" aria-label="Close" onClick={() => this.onClickDelete(word._id)}>
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </li>
+                        )
+                    })}
+                </div>
+                <div className='column' style={{width:'33%', paddingLeft: '20px'}}>
+                    {midCol.map(word => {
+                        return (
+                            <li className="list-group-item" key={word._id}>
+                                {word.word}
+                                <button type="button" className="close" aria-label="Close" onClick={() => this.onClickDelete(word._id)}>
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </li>
+                        )
+                    })}
+                </div>
+                <div className='column' style={{width:'33%', paddingLeft: '20px'}}>
+                    {rightCol.map(word => {
+                        return (
+                            <li className="list-group-item" key={word._id}>
+                                {word.word}
+                                <button type="button" className="close" aria-label="Close" onClick={() => this.onClickDelete(word._id)}>
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </li>
+                        )
+                    })}
+                </div>
+            </div>
         )
         
     }

@@ -1,18 +1,26 @@
+// eslint-disable-next-line
 const express = require('express');
+// eslint-disable-next-line
 const cors = require('cors');
+// eslint-disable-next-line
 const mongoose = require('mongoose');
+// eslint-disable-next-line
 var jwtUtils = require('./config/jwt.utils');
+// eslint-disable-next-line
 require('dotenv').config();
 
 
 
 // create the app
 const app = express();
+// eslint-disable-next-line
 const port = process.env.PORT || 7000;
 
 
 // Socket.io import
+// eslint-disable-next-line
 const server = require('http').Server(app)
+// eslint-disable-next-line
 const io = require('socket.io')(server)
 
 
@@ -21,14 +29,18 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
 //connection to MongoDB
+// eslint-disable-next-line
 const uri = process.env.ATLAS_URI;
 mongoose.connect(uri, {useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true})
 .then(() => console.log('MongoDB Connected...'))
 .catch(err => console.log(err));
 
 // routes definition
+// eslint-disable-next-line
 app.use('/', require('./routes/games'));
+// eslint-disable-next-line
 app.use('/users', require('./routes/users'));
+// eslint-disable-next-line
 app.use('/word', require('./routes/word'));
 
 //----------- Game Class def ---------------
@@ -70,7 +82,7 @@ class GameCache{
     getTimer() {
         return this._timer;
     }
-};
+}
 
 
 
@@ -83,7 +95,9 @@ const maxScore = 500;
 const gameDuration = 90
 
 // import models
+// eslint-disable-next-line
 const Game = require('./models/Game');
+// eslint-disable-next-line
 const Word = require('./models/Word')
 
 io.on('connection', socket => {
@@ -106,7 +120,7 @@ io.on('connection', socket => {
                     if (games[gameID].word.length >0){
                         io.to(socket.id).emit('setWord', {word: games[gameID].word})
                     }
-                    for (i=0; i<games[gameID]._history.length; i++){
+                    for (var i=0; i<games[gameID]._history.length; i++){
                         io.to(socket.id).emit('line', { 
                             lineWidth: games[gameID]._history[i].lineWidth,
                             lineColor: games[gameID]._history[i].lineColor,
@@ -126,7 +140,7 @@ io.on('connection', socket => {
                     console.log("player added")
                     // Give the upate to the game player of the new user
                     io.to(gameID).emit('playerList', games[gameID]._players)
-                    io.to(gameID).emit("newChatMessage", { message: `${user.name} has joined`}); 
+                    io.to(gameID).emit("newChatMessage", {type:'secondary', msg: `${user.name} has joined`}); 
                 })
             }
         }
@@ -144,14 +158,14 @@ io.on('connection', socket => {
                 if(data.message.toLowerCase() == word){
                     // if the player guessed the word
                     // inform the players that user guessed the word
-                    io.to(gameID).emit("newChatMessage", { message: `${user.name} guessed the word `});
+                    io.to(gameID).emit("newChatMessage", {type: 'success', msg: `${user.name} guessed the word `});
 
                     //update the score of the drawer and the user
                     var players=games[gameID]._players;
                     var indPlayer = 0;
                     var indDrawer = 0;
                     const socketDrawer = games[gameID].getDrawing().socketID;
-                    for (i=0; i<players.length; i++){
+                    for (var i=0; i<players.length; i++){
                         if (players[i].socketID == socket.id){
                             indPlayer = i;
                         }
@@ -168,7 +182,7 @@ io.on('connection', socket => {
                     }
                 } else {
                     //normal message
-                    io.to(gameID).emit("newChatMessage", { message: `${user.name} : `+data.message});
+                    io.to(gameID).emit("newChatMessage", {type:'default', msg: `${user.name} : `+data.message});
                 }
             }
         }
@@ -180,26 +194,28 @@ io.on('connection', socket => {
     socket.on('startGame', data => {
         const gameID = data.gameID
         const game = games[gameID];
-        game.hasStarted = true;
-        // inform the players
-        io.to(gameID).emit('hasStarted', {hasStarted: true})
-        // pick a drawer
-        const players=game.getPlayers();
-        var newDrawer = players[0];
-        game.setDrawing(newDrawer)
-        io.to(newDrawer.socketID).emit('setDrawwing', {isDrawing: true})
-        game.isPaused = true;
-        // Choose three random word in the database and propose them to the drawer
-        io.to(gameID).emit('gamePaused', {isPaused: true, name: newDrawer.name})
-        Word.find().then(words => {
-            var randWords = [];
-            do {
-                randWords.push(words.splice(
-                                            Math.floor(Math.random() * words.length)
-                                        , 1)[0]);
-            } while (randWords.length < 3);
-            io.to(newDrawer.socketID).emit('chooseWord', {words: randWords})
-        })
+        if (game.getPlayers().length>1){
+            game.hasStarted = true;
+            // inform the players
+            io.to(gameID).emit('hasStarted', {hasStarted: true})
+            // pick a drawer
+            const players=game.getPlayers();
+            var newDrawer = players[0];
+            game.setDrawing(newDrawer)
+            io.to(newDrawer.socketID).emit('setDrawwing', {isDrawing: true})
+            game.isPaused = true;
+            // Choose three random word in the database and propose them to the drawer
+            io.to(gameID).emit('gamePaused', {isPaused: true, name: newDrawer.name})
+            Word.find().then(words => {
+                var randWords = [];
+                do {
+                    randWords.push(words.splice(
+                                                Math.floor(Math.random() * words.length)
+                                            , 1)[0]);
+                } while (randWords.length < 3);
+                io.to(newDrawer.socketID).emit('chooseWord', {words: randWords})
+            })
+        }
     })
 
     // Manage players disconnection
@@ -207,14 +223,22 @@ io.on('connection', socket => {
         // because we can only access the socketID, we have to check all the cache to find the game
         Object.keys(games).forEach(gameID =>{
             var game = games[gameID];
-            for(i=0; i<game._players.length; i++){
+            for(var i=0; i<game._players.length; i++){
                 const player= game._players[i]
                 if (player.socketID === socket.id){
                     // We found the player
                     games[gameID]._players.splice(i,1);
                     // if the leaving player is the drawer, we directly go to the next round
                     if (socket.id === games[gameID].getDrawing().socketID){
-                        games[gameID].setTimer(1)
+                        games[gameID].isPaused = false;
+                        games[gameID].setTimer(1);
+                    }
+                    // Stop the party if there is only 1 player left
+                    console.log(games[gameID].getPlayers())
+                    if (games[gameID].getPlayers().length === 1){
+                        game.hasStarted=false;
+                        console.log('test')
+                        io.to(gameID).emit('hasStarted', {hasStarted: false})
                     }
                     Game.findById(gameID, (err, gamedb) => {
                         if (gamedb){
@@ -233,7 +257,7 @@ io.on('connection', socket => {
                     }).then(() => {
                         if(games[gameID]){
                             // we inform the other players
-                            io.to(gameID).emit("newChatMessage", { message: `${player.name} has left`});
+                            io.to(gameID).emit("newChatMessage", {type: 'secondary',msg: `${player.name} has left`});
                             io.to(gameID).emit('playerList', games[gameID]._players);
                             console.log("disconnected succesfully")
                         }
@@ -278,7 +302,7 @@ io.on('connection', socket => {
 // Manage a round
 function timeWatcher() {
     const gameIds = Object.keys(games);
-    for (i=0; i<gameIds.length; i++){
+    for (var i=0; i<gameIds.length; i++){
         // for each party
         const gameID = gameIds[i];
         const game = games[gameID];
@@ -288,6 +312,7 @@ function timeWatcher() {
         if (players.length===0){
             isEnded = true
         }
+        
         if (!game.isPaused && game.hasStarted && !isEnded){
             // if there is a round ongoing
             game.decrementTimer();

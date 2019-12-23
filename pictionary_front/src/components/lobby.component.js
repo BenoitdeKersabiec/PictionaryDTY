@@ -3,6 +3,7 @@ import axios from 'axios';
 import { contextUserData } from '../Context'
 
 export default class Lobby extends Component {
+    // eslint-disable-next-line
     static contextType = contextUserData
 
     constructor(props){
@@ -47,7 +48,7 @@ export default class Lobby extends Component {
         return (
             this.state.games.map(game => {
             return (
-                <div style={{paddingBottom: '10px'}}>
+                <div style={{paddingBottom: '10px'}} key={game._id}>
                 <div className="card bg-light">
                     <div className="card-header ">
                         <h6>{game.players.length} player(s) are playing</h6>
@@ -82,7 +83,7 @@ export default class Lobby extends Component {
             params: {
             token: this.state.token,
             gameID: gameID,
-            from: 'dashboard'
+            from: 'lobby'
             }})
         .then(res => {
             if (res.data.type === 'success'){
