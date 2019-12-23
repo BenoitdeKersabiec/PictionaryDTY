@@ -17,6 +17,7 @@ export default class Dashboard extends Component {
         this.numberGame = this.numberGame.bind(this);
         this.Lobby = this.Lobby.bind(this);
         this.onClickLogout = this.onClickLogout.bind(this);
+        this.onClickJoin = this.onClickJoin.bind(this);
 
         this.state = {
             token: '',
@@ -36,7 +37,7 @@ export default class Dashboard extends Component {
 
             this.setState({token: token, isAdmin: data.isAdmin})
 
-            axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/dash', {
+            axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/dashboard', {
                 params: {
                 token: token
                 }})
@@ -93,6 +94,7 @@ export default class Dashboard extends Component {
         return (
             this.state.games.map(game => {
             return (
+                <div style={{paddingBottom: '10px'}}>
                 <div className="card bg-light">
                     <div className="card-header ">
                         {this.gamePlayers(game)}
@@ -117,13 +119,33 @@ export default class Dashboard extends Component {
                         </div>
                     </div>
                 </div>
+                </div>
             )
         }))
     }
     
     onClickJoin(gameID){
-        this.context.setGameID(gameID);
-        this.props.history.push("/ingame/")
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/joingame', {
+            params: {
+            token: this.state.token,
+            gameID: gameID,
+            from: 'dashboard'
+            }})
+        .then(res => {
+            if (res.data.type === 'success'){
+                this.context.setGameID(gameID);
+                this.props.history.push("/ingame/")
+            } else {
+                this.setState({
+                    games: res.data.games
+                })
+            }
+
+        }
+        )
+        .catch((error) => {
+            console.log(error);
+        })
     }
 
     onClickDelete(gameID){
@@ -132,7 +154,7 @@ export default class Dashboard extends Component {
               token: this.state.token,
               gameID: gameID
             }}).then(() => {
-                axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/dash', {
+                axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/dashboard', {
                     params: {
                     token: this.state.token
                     }})
@@ -166,7 +188,7 @@ export default class Dashboard extends Component {
             } else {
                 sentence = n.toString() + ' games'
             }
-            return <h4>You have created {sentence} </h4>
+            return <h4 style={{paddingTop: '10px'}}>You have created {sentence} </h4>
         }
         
     }
@@ -174,7 +196,7 @@ export default class Dashboard extends Component {
     render(){
         
         return(
-            <div className="container addtop">
+            <div className="container addtop text-center">
                 <div className="card text-white bg-primary" >
                 <div className="card-header text-center">
                     <h1>Dashboard</h1>

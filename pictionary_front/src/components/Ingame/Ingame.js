@@ -289,7 +289,7 @@ export default class Ingame extends Component {
         const colorPicker = ["#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#ffffff", "#03a9f4", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#cddc39", "#888888", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#795548", "#607d8b", "#000000"]
 
         return (
-            <div>            
+            <div style={{paddingTop: '10px'}}>            
             <div className="row">
             <div className="column" style={{width: '45%'}}>
                 <div>

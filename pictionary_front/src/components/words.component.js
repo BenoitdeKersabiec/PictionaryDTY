@@ -6,6 +6,8 @@ import { withRouter } from "react-router-dom";
 
 import './addtop.css'
 
+
+// Word Manager for the admins
 export default withRouter(class Words extends Component {
     static contextType = contextUserData
 
@@ -34,9 +36,9 @@ export default withRouter(class Words extends Component {
                 this.context.setFlashMsg({type: "warning", msg: "Only an admin account can access this content"})
                 this.props.history.push('/users/login')
             } else {
+                // only admin are here
                 this.setState({token: token, isAdmin: data.isAdmin})
-    
-           
+                
                 axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/word/words', {
                     params: {
                     token: token

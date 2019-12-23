@@ -47,6 +47,7 @@ export default class Lobby extends Component {
         return (
             this.state.games.map(game => {
             return (
+                <div style={{paddingBottom: '10px'}}>
                 <div className="card bg-light">
                     <div className="card-header ">
                         <h6>{game.players.length} player(s) are playing</h6>
@@ -71,14 +72,33 @@ export default class Lobby extends Component {
                         </div>
                     </div>
                 </div>
+                </div>
             )
         }))
     }
 
     onClickJoin(gameID){
-        console.log(gameID)
-        this.context.setGameID(gameID);
-        this.props.history.push("/ingame")
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/joingame', {
+            params: {
+            token: this.state.token,
+            gameID: gameID,
+            from: 'lobby'
+            }})
+        .then(res => {
+            if (res.data.type === 'success'){
+                this.context.setGameID(gameID);
+                this.props.history.push("/ingame/")
+            } else {
+                this.setState({
+                    games: res.data.games
+                })
+            }
+
+        }
+        )
+        .catch((error) => {
+            console.log(error);
+        })
     }
 
     numberGame(e){
@@ -89,7 +109,7 @@ export default class Lobby extends Component {
         } else {
             sentence = n.toString() + ' games'
         }
-        return <h4>There are currently {sentence} available</h4>
+        return <h4 style={{paddingTop: '10px'}}>There are currently {sentence} available</h4>
     }
 
     newGame(e){
@@ -130,7 +150,7 @@ export default class Lobby extends Component {
     render() {
 
         return (
-            <div className="container addtop">
+            <div className="container addtop text-center">
                 <div className="card text-white bg-primary" >
                 <div className="card-header text-center">
                     <h1>Pictionary Lobby</h1>

@@ -8,7 +8,7 @@ const Game = require('../models/Game');
 
 
 // return all the games created by someone. If admin, return all the games.
-router.get('/dash', (req,res)=>{
+router.get('/dashboard', (req,res)=>{
     const token = req.query.token;
     if(jwtUtils.verifyToken(token) != null){
         var user = jwtUtils.getUserData(token);
@@ -80,5 +80,51 @@ router.get('/lobby', (req,res) => {
     }
     
 });
+
+// when a user want to join a game
+router.get('/joingame', (req,res) => {
+    const token = req.query.token;
+    const gameID = req.query.gameID;
+    if(token){
+        if(jwtUtils.verifyToken(token) != null){
+            var user = jwtUtils.getUserData(req.query.token)
+            Game.findById(gameID).then(game => {
+                if (game.isEnded){
+                    // the game has Ended, we send to the user an up to date version of his games
+                    if (req.query.from === 'dashboard'){
+                        if (user.isAdmin){
+                            Game.find().then(games => {
+                                res.json({
+                                    type: 'failure',
+                                    games: games
+                                })
+                            })
+                        } else {
+                            Game.find({creator: {id: mongoose.Types.ObjectId(user._id), name: user.name}})
+                            .then(games => {
+                                res.json({
+                                    type: 'failure',
+                                    games: games
+                                })})
+                        }
+                    }
+                    if (req.query.from === 'lobby'){
+                        Game.find({isEnded: false}).then(games => {
+                            res.json({
+                                type: 'failure',
+                                games: games
+                            });
+                        })
+                    }
+                } else {
+                    //the game is available
+                    res.json({type: 'success', parties: []})
+                }
+            })
+        }
+    }
+
+    
+})
 
 module.exports = router;
