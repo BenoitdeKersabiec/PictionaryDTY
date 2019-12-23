@@ -7,12 +7,13 @@ export default class Tool extends Component {
 
   render() {
     return (
-      <div
+      <button
         onClick={this.handleOnClick.bind(this)}
-        className={`tool-container ${(this.props.currentTool === this.props.toolId) ?
-        "tool-container--selected":""}`}>
-        <code>{this.props.name}</code>
-      </div>
+        className='btn btn-primary btn-block'
+        width= '100px'
+        >
+        {this.props.name}
+      </button>
     );
   }
 }

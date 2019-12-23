@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const PartySchema = new mongoose.Schema({
+const GameSchema = new mongoose.Schema({
     creator: {
         id: {
             type: mongoose.Schema.Types.ObjectId,
@@ -34,6 +34,6 @@ function memberLimit(val){
     return val.length <=10
 };
 
-const Party = mongoose.model('Party', PartySchema);
+const Game = mongoose.model('Game', GameSchema);
 
-module.exports = Party;
+module.exports = Game;

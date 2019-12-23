@@ -6,7 +6,7 @@ var jwtUtils = require('../config/jwt.utils');
 // User model
 const User = require('../models/User');
 
-// Register Handle
+// Register Handler
 router.route('/register').post((req,res, next) => {
 
     const name = req.body.name;
@@ -70,7 +70,7 @@ router.route('/register').post((req,res, next) => {
     }
 });
 
-// Login Handle
+// Login Handler
 router.post('/login', (req,res)=>{
     User.findOne({email: req.body.email})
             .then(user => {

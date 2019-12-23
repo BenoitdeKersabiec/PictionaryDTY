@@ -1,11 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const passport = require('passport');
 const session = require("express-session");
-const flash = require("connect-flash");
 var jwtUtils = require('./config/jwt.utils');
-const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const gameDuration = 90
@@ -19,14 +16,10 @@ const port = process.env.PORT || 7000;
 const server = require('http').Server(app)
 const io = require('socket.io')(server)
 
-// Passport config
-require('./config/passport')(passport);
-
 
 app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(express.urlencoded({extended: false}));
 
 //connection to MongoDB
 const uri = process.env.ATLAS_URI;
@@ -34,38 +27,13 @@ mongoose.connect(uri, {useNewUrlParser: true, useCreateIndex: true, useUnifiedTo
 .then(() => console.log('MongoDB Connected...'))
 .catch(err => console.log(err));
 
-// BodyParser
-app.use(express.urlencoded({extended: false}));
-
-// Express Session
-app.use(session({
-    secret: 'secret',
-    resave: true,
-    saveUninitialized: true
-  }));
-
-// Connect Flas
-app.use(flash());
-
-// Global vars
-app.use((req, res, next)=>{
-    res.locals.success_msg = req.flash('success_msg');
-    res.locals.error_msg = req.flash('error_msg');
-    res.locals.error = req.flash('error');
-    next();
-});
-
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
 // routes definition
-app.use('/', require('./routes/index'));
+app.use('/', require('./routes/games'));
 app.use('/users', require('./routes/users'));
 app.use('/word', require('./routes/word'));
 
 //----------- Game Class def ---------------
-class Game{
+class GameCache{
     constructor() {
         this._timer = gameDuration;
         this._players = [];
@@ -110,78 +78,79 @@ class Game{
 //---------SocketIO Management--------------
 server.listen(7001)
 
+// consts
 const games = {};
 const maxScore = 500;
 
 
 // import models
-const Party = require('./models/Party');
-const User = require('./models/User');
+const Game = require('./models/Game');
 const Word = require('./models/Word')
 
 io.on('connection', socket => {
     console.log('connection established!')
 
+    // A user join a game
     socket.on('new-user', (data) => {
-        var partyID = data.partyID
-        if (games[partyID]){
-            console.log('test')
-            io.to(socket.id).emit('hasStarted', {hasStarted: games[partyID].hasStarted})
-            if (games[partyID].word.length >0){
-                io.to(partyID).emit('setWord', {word: games[partyID].word})
-            }
-        }
+        var gameID = data.gameID
+
         if(data.token){
             if(jwtUtils.verifyToken(data.token) != null){
+                // get user data from token
                 var user = jwtUtils.getUserData(data.token);
                 
-                //io.to(data.partyID).emit("newChatMessage", { message: `${user.name} has joined`});
-                if (!Object.keys(games).includes(partyID)){
-                    games[partyID] = new Game();
+                if (!Object.keys(games).includes(gameID)){
+                    // new game
+                    games[gameID] = new GameCache();
+                } else {
+                    // inform user from game data
+                    io.to(socket.id).emit('hasStarted', {hasStarted: games[gameID].hasStarted})
+                    if (games[gameID].word.length >0){
+                        io.to(socket.id).emit('setWord', {word: games[gameID].word})
+                    }
+                    for (i=0; i<games[gameID]._history.length; i++){
+                        io.to(socket.id).emit('line', { 
+                            lineWidth: games[gameID]._history[i].lineWidth,
+                            lineColor: games[gameID]._history[i].lineColor,
+                            lineCoordinates: games[gameID]._history[i].lineCoordinates,
+                        });
+                    }
                 }
-                games[partyID].addPlayers({name: user.name, socketID: socket.id, score:0, guessed: false, _id:user._id})
-                socket.join(partyID)
-                Party.findById(partyID, (err, game) => {
+                // add player in DerverCache/SocketRooms/DataBase
+                games[gameID].addPlayers({name: user.name, socketID: socket.id, score:0, guessed: false, _id:user._id})
+                socket.join(gameID)
+                Game.findById(gameID, (err, game) => {
                     game.players = [...game.players, {id: user._id, name: user.name}];
                     game.save()
                 }).then(() => {
-                    io.to(partyID).emit('playerList', games[partyID]._players)
                     console.log("player added")
-                    io.to(partyID).emit("newChatMessage", { message: `${user.name} has joined`});
-                    if (games[partyID]){
-                        for (i=0; i<games[partyID]._history.length; i++){
-                            io.to(socket.id).emit('line', { 
-                                lineWidth: games[partyID]._history[i].lineWidth,
-                                lineColor: games[partyID]._history[i].lineColor,
-                                lineCoordinates: games[partyID]._history[i].lineCoordinates,
-                            });
-                        }
-                    }
+                    // Give the upate to the game player of the new user
+                    io.to(gameID).emit('playerList', games[gameID]._players)
+                    io.to(gameID).emit("newChatMessage", { message: `${user.name} has joined`}); 
                 })
-
-
-                
-                
             }
         }
     })
 
-    
-
-
+    //Chat Manager
     socket.on("newChatMessage", data =>{
         const token = data.token;
-        const partyID = data.partyID;
-        if (games[partyID]){
-            const word = games[partyID].getWord();
+        const gameID = data.gameID;
+        if (games[gameID]){
+            const word = games[gameID].getWord();
             if(jwtUtils.verifyToken(token) != null){
                 var user = jwtUtils.getUserData(token);
-                if(data.message == word){
-                    io.to(partyID).emit("newChatMessage", { message: `${user.name} guessed the word `});
-                    var players=games[partyID]._players;
+                
+                if(data.message.toLowerCase() == word){
+                    // if the player guessed the word
+                    // inform the players that user guessed the word
+                    io.to(gameID).emit("newChatMessage", { message: `${user.name} guessed the word `});
+
+                    //update the score of the drawer and the user
+                    var players=games[gameID]._players;
                     var indPlayer = 0;
                     var indDrawer = 0;
-                    const socketDrawer = games[partyID].getDrawing().socketID;
+                    const socketDrawer = games[gameID].getDrawing().socketID;
                     for (i=0; i<players.length; i++){
                         if (players[i].socketID == socket.id){
                             indPlayer = i;
@@ -191,13 +160,15 @@ io.on('connection', socket => {
                         }
                     }
                     if (!players[indPlayer].guessed){
-                        players[indPlayer].score = players[indPlayer].score + games[partyID].getTimer();
+                        players[indPlayer].score = players[indPlayer].score + games[gameID].getTimer();
                         players[indPlayer].guessed = true;
-                        players[indDrawer].score = players[indDrawer].score + Math.floor(games[partyID].getTimer()/games[partyID].getPlayers().length)
-                        io.to(partyID).emit('playerList', games[partyID]._players);  
+                        players[indDrawer].score = players[indDrawer].score + Math.floor(games[gameID].getTimer()/games[gameID].getPlayers().length)
+                        // inform the players of the new score
+                        io.to(gameID).emit('playerList', games[gameID]._players);  
                     }
                 } else {
-                    io.to(partyID).emit("newChatMessage", { message: `${user.name} : `+data.message});
+                    //normal message
+                    io.to(gameID).emit("newChatMessage", { message: `${user.name} : `+data.message});
                 }
             }
         }
@@ -205,13 +176,15 @@ io.on('connection', socket => {
         
     });
 
+    // Begin a game (eg start drawing and everything)
     socket.on('startGame', data => {
         const gameID = data.gameID
         const game = games[gameID];
         game.hasStarted = true;
+        // inform the players
         io.to(gameID).emit('hasStarted', {hasStarted: true})
+        // pick a drawer
         const players=game.getPlayers();
-
         var newDrawer = players[0];
         game.setDrawing(newDrawer)
         io.to(newDrawer.socketID).emit('setDrawwing', {isDrawing: true})
@@ -229,32 +202,37 @@ io.on('connection', socket => {
         })
     })
 
+    // Manage players disconnection
     socket.on('disconnect', () => {
-        Object.keys(games).forEach(partyID =>{
-            var game = games[partyID];
+        // because we can only access the socketID, we have to check all the cache to find the game
+        Object.keys(games).forEach(gameID =>{
+            var game = games[gameID];
             for(i=0; i<game._players.length; i++){
                 const player= game._players[i]
                 if (player.socketID === socket.id){
-                    games[partyID]._players.splice(i,1);
-                    Party.findById(partyID, (err, gamedb) => {
+                    // We find the player
+                    games[gameID]._players.splice(i,1);
+                    Game.findById(gameID, (err, gamedb) => {
                         if (gamedb){
+                            // we delete the player from the game in the database
                             const players = gamedb.players;
                             var ind = 0
-                            while (!players[ind].id ===player._id && ind<100){
+                            while (!players[ind].id ===player._id){
                                 ind ++
                             }
-                            if(ind === 100){
-                                console.log('soucis dans la matrice')
-                            } else {
-                                gamedb.players.splice(ind,1);
-                            }
+                            
+                            gamedb.players.splice(ind,1);
+                            
                             gamedb.save();
                         }
                         
                     }).then(() => {
-                        io.to(partyID).emit("newChatMessage", { message: `${player.name} has left`});
-                        io.to(partyID).emit('playerList', games[partyID]._players);
-                        console.log("disconnected succesfully")
+                        if(games[gameID]){
+                            // we inform the other players
+                            io.to(gameID).emit("newChatMessage", { message: `${player.name} has left`});
+                            io.to(gameID).emit('playerList', games[gameID]._players);
+                            console.log("disconnected succesfully")
+                        }
                     })
                     
                 }
@@ -262,110 +240,114 @@ io.on('connection', socket => {
         })
     })
 
+    // manage line drawing
     socket.on('line', data => {
         const lineCoordinates = data.lineCoordinates;
-        var partyID = data.partyID;
-        games[partyID]._history.push({lineWidth: data.lineWidth, lineColor: data.lineColor, lineCoordinates: data.lineCoordinates})
-        io.to(data.partyID).emit('line', { 
+        var gameID = data.gameID;
+        games[gameID]._history.push({lineWidth: data.lineWidth, lineColor: data.lineColor, lineCoordinates: data.lineCoordinates})
+        io.to(data.gameID).emit('line', { 
             lineWidth: data.lineWidth,
             lineColor: data.lineColor,
             lineCoordinates
         });
     });
 
+    // the drawer has choosen a word
     socket.on('wordChoosen', data =>{
-        const partyID = data.partyID;
+        const gameID = data.gameID;
         const word = data.word;
-        const game = games[partyID]
+        const game = games[gameID]
         game.word = word;
+        // start a new round
         game.isPaused = false;
-        io.to(partyID).emit('gamePaused', {isPaused: false})
+        io.to(gameID).emit('gamePaused', {isPaused: false})
         game.resetTimer(gameDuration);
         game._history= [];
         game._players.forEach(function(player){
             player.guessed = false;
         })
-        io.to(partyID).emit('setWord', {word: word})
+        io.to(gameID).emit('setWord', {word: word})
         
     })
 });
 
+// Manage a round
 function timeWatcher() {
     const gameIds = Object.keys(games);
     for (i=0; i<gameIds.length; i++){
-        const partyID = gameIds[i];
-        const game = games[partyID];
-        if (!game.isPaused && game.hasStarted){
+        // for each party
+        const gameID = gameIds[i];
+        const game = games[gameID];
+        var isEnded=false;
+        const players=game.getPlayers();
+
+        if (players.length===0){
+            isEnded = true
+        }
+        if (!game.isPaused && game.hasStarted && !isEnded){
+            // if there is a round ongoing
             game.decrementTimer();
             const timer = game.getTimer()
-            NbGuessed= 0;
-            players=game.getPlayers();
+
+            var NbGuessed= 0;
+            
             players.forEach(function(player) {
                 if (player.guessed){
                     NbGuessed = NbGuessed + 1
                 }
             })
-            if(timer <= 0 || (NbGuessed >= players.length - 1 && players.length > 1) || players.length === 0){
-                const players=game.getPlayers();
-                const drawer = game.getDrawing();
 
-                isEnded=false;
-
-                players.forEach(player => {
-                    if (player.score > maxScore) {
-                        isEnded = true
-                    }
-                })
-                if (players.length===0){
+            players.forEach(player => {
+                if (player.score > maxScore) {
                     isEnded = true
                 }
+            })
 
-                if (isEnded){
-                    console.log('Party Ended')
-                    Party.findById(partyID, (err, doc) => {
-                        doc.isEnded = true;
-                        doc.save()
-                    }).then(() => io.to(partyID).emit('isEnded', {isEnded}))
-                    delete games[partyID]
-                    
-                    
-                    
-
-                } else {
-                    var indDrawer = 0;
-                    for(i=0; i<players.length; i++){
-                        const player= players[i];
-                        if (player === drawer){
-                            indDrawer = i;
-                        }
-                    }
-                    io.to(drawer.socketID).emit('setDrawwing', {isDrawing: false})
-                    var indNewDrawer = 0;
-                    if (indDrawer == players.length - 1){
-                        indNewDrawer = 0;
-                    } else {
-                        indNewDrawer = indDrawer + 1
-                    }
-                    var newDrawer = players[indNewDrawer];
-                    game.setDrawing(newDrawer)
-                    io.to(newDrawer.socketID).emit('setDrawwing', {isDrawing: true})
-                    game.isPaused = true;
-                    // Choose three random word in the database and propose them to the drawer
-                    io.to(partyID).emit('gamePaused', {isPaused: true, name: newDrawer.name})
-                    Word.find().then(words => {
-                        var randWords = [];
-                        do {
-                            randWords.push(words.splice(
-                                                        Math.floor(Math.random() * words.length)
-                                                    , 1)[0]);
-                        } while (randWords.length < 3);
-                        io.to(newDrawer.socketID).emit('chooseWord', {words: randWords})
-                    })
-                }
+            if(timer <= 0 || (NbGuessed >= players.length - 1 && players.length > 1) && !isEnded){
+                // if time has ellapsed or everybody has guessed we start a new round
+                const drawer = game.getDrawing();
                 
-
+                var indDrawer = 0;
+                for(i=0; i<players.length; i++){
+                    const player= players[i];
+                    if (player === drawer){
+                        indDrawer = i;
+                    }
+                }
+                io.to(drawer.socketID).emit('setDrawwing', {isDrawing: false})
+                var indNewDrawer = 0;
+                if (indDrawer == players.length - 1){
+                    indNewDrawer = 0;
+                } else {
+                    indNewDrawer = indDrawer + 1
+                }
+                var newDrawer = players[indNewDrawer];
+                game.setDrawing(newDrawer)
+                io.to(newDrawer.socketID).emit('setDrawwing', {isDrawing: true})
+                game.isPaused = true;
+                // Choose three random word in the database and propose them to the drawer
+                io.to(gameID).emit('gamePaused', {isPaused: true, name: newDrawer.name})
+                Word.find().then(words => {
+                    var randWords = [];
+                    do {
+                        randWords.push(words.splice(
+                                                    Math.floor(Math.random() * words.length)
+                                                , 1)[0]);
+                    } while (randWords.length < 3);
+                    io.to(newDrawer.socketID).emit('chooseWord', {words: randWords})
+                })
             }
-            io.to(partyID).emit('timerCountdown', {timer})
+            io.to(gameID).emit('timerCountdown', {timer})
+        }
+        if (isEnded){
+            // we delete the game from the cache and end it in the database
+            console.log('Game Ended')
+            Game.findById(gameID, (err, doc) => {
+                doc.isEnded = true;
+                doc.save()
+            }).then(() => io.to(gameID).emit('isEnded', {isEnded})) //inform the players
+            delete games[gameID]
+            
         }
     }
 }

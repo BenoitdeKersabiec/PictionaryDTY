@@ -6,6 +6,7 @@ const JWT_SIGN_SECRET = 'lfvlfcvsfvdf5gd8ju6khb1q9egsmfdoijlogkjbkdhn8n91sgfd1v6
 
 // Exported functions
 module.exports = {
+    // generate a token for a user
     generateTokenForUser: function(userData){
         return jwt.sign({
             userId: userData._id,
@@ -14,6 +15,8 @@ module.exports = {
         },
         JWT_SIGN_SECRET)
     },
+
+    // from a token, return the encrypted data
     getUserData: function(token){
         var userId = 0;
         var username = '';
@@ -31,8 +34,9 @@ module.exports = {
         }
         return {_id: userId, name: username, isAdmin: isAdmin};
     },
+
+    // check if a token is valid
     verifyToken: function(token){
         return (jwt.verify(token, JWT_SIGN_SECRET));
-        
     }
 }

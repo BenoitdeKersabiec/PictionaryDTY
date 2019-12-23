@@ -9,13 +9,13 @@ export default class Lobby extends Component {
         super(props);
 
         this.dashboard = this.dashboard.bind(this);
-        this.newParty = this.newParty.bind(this);
+        this.newGame = this.newGame.bind(this);
         this.refresh = this.refresh.bind(this);
         
         this.state = {
             token: '',
             name: '',
-            parties: [],
+            games: [],
         }
     }
 
@@ -33,7 +33,7 @@ export default class Lobby extends Component {
             }})
         .then(res => {
             this.setState({
-            parties: res.data.parties,
+            games: res.data.games,
             });
         })
         .catch((error) => {
@@ -43,27 +43,27 @@ export default class Lobby extends Component {
 
 
 
-    partyList(e){
+    gameList(e){
         return (
-            this.state.parties.map(party => {
+            this.state.games.map(game => {
             return (
                 <div className="card bg-light">
                     <div className="card-header ">
-                        <h6>{party.players.length} player(s) are playing</h6>
+                        <h6>{game.players.length} player(s) are playing</h6>
                     </div>
                     <div className="card-body">
                         <div className="row">
                             <div className='col'>
                                 <p className="card-text">
-                                    {party.creator.name +' created this game on '+party.date.slice(0,10)}
+                                    {game.creator.name +' created this game on '+game.date.slice(0,10)}
                                 </p>
                             </div>
                             <div className='col'>
-                                {party.isEnded ? '' : 
+                                {game.isEnded ? '' : 
                                 <button 
                                 type="button" 
                                 className="btn btn-primary btn-block" 
-                                onClick={() => this.onClickJoin(party._id)}>
+                                onClick={() => this.onClickJoin(game._id)}>
                                     Join Game
                                 </button>}
                             </div>
@@ -75,14 +75,14 @@ export default class Lobby extends Component {
         }))
     }
 
-    onClickJoin(partyID){
-        console.log(partyID)
-        this.context.setGameID(partyID);
+    onClickJoin(gameID){
+        console.log(gameID)
+        this.context.setGameID(gameID);
         this.props.history.push("/ingame")
     }
 
-    numberParty(e){
-        var n = this.state.parties.length
+    numberGame(e){
+        var n = this.state.games.length
         var sentence = ''
         if (n===1|| n===0){
             sentence = n.toString() + ' game'
@@ -92,14 +92,13 @@ export default class Lobby extends Component {
         return <h4>There are currently {sentence} available</h4>
     }
 
-    newParty(e){
-        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/newparty', {
+    newGame(e){
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/newgame', {
             params: {
               token: this.state.token
             }})
         .then(res => {
-            this.context.setGameID(res.data.partyID);
-            localStorage.setItem('partyID', res.data.partyID);
+            this.context.setGameID(res.data.gameID);
             this.props.history.push("/ingame")
         }
         )
@@ -120,7 +119,7 @@ export default class Lobby extends Component {
             }})
         .then(res => {
             this.setState({
-            parties: res.data.parties,
+            games: res.data.games,
             });
         })
         .catch((error) => {
@@ -154,7 +153,7 @@ export default class Lobby extends Component {
                             <button type="button" className="btn btn-secondary btn-block" onClick={this.dashboard}>Dashboard</button>
                         </div>
                         <div className='row addtop'>
-                            <button type="button" className="btn btn-info btn-block" onClick={this.newParty}>New Game</button>
+                            <button type="button" className="btn btn-info btn-block" onClick={this.newGame}>New Game</button>
                         </div>
                     </div>
                 </div>
@@ -162,8 +161,8 @@ export default class Lobby extends Component {
                 </div>
                 
             <div>
-                { this.numberParty() }
-                { this.partyList() }
+                { this.numberGame() }
+                { this.gameList() }
             </div>
             </div>
         )

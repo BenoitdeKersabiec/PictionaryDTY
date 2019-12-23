@@ -12,17 +12,16 @@ export default class Dashboard extends Component {
     constructor(props){
         super(props);
 
-        this.newParty = this.newParty.bind(this);
-        this.partyCards = this.partyCards.bind(this);
-        this.numberParty = this.numberParty.bind(this);
+        this.newGame = this.newGame.bind(this);
+        this.gameCards = this.gameCards.bind(this);
+        this.numberGame = this.numberGame.bind(this);
         this.Lobby = this.Lobby.bind(this);
         this.onClickLogout = this.onClickLogout.bind(this);
 
         this.state = {
             token: '',
             name: '',
-            parties: [],
-            curParty: [],
+            games: [],
             isAdmin: false
         }
     }
@@ -44,7 +43,7 @@ export default class Dashboard extends Component {
             .then(res => 
                 this.setState({
                 name: res.data.name,
-                parties: res.data.parties
+                games: res.data.games
             }))
             .catch((error) => {
                 console.log(error);
@@ -57,14 +56,13 @@ export default class Dashboard extends Component {
         this.props.history.push("/")
     }
 
-    newParty(e){
-        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/newparty', {
+    newGame(e){
+        axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/newgame', {
             params: {
               token: this.state.token
             }})
         .then(res => {
-            this.context.setGameID(res.data.partyID);
-            localStorage.setItem('partyID', res.data.partyID);
+            this.context.setGameID(res.data.gameID);
             this.props.history.push("/ingame")
         }
         )
@@ -77,41 +75,41 @@ export default class Dashboard extends Component {
         this.props.history.push("/lobby")
     }
 
-    gamePlayers(party){
-        if (party.isEnded){
+    gamePlayers(game){
+        if (game.isEnded){
             return (<div>
                     The game is over
-                    <button type="button" className="close" aria-label="Close" onClick={() => this.onClickDelete(party._id)}>
+                    <button type="button" className="close" aria-label="Close" onClick={() => this.onClickDelete(game._id)}>
                             <span aria-hidden="true">&times;</span>
                     </button>
                 </div>)
         } else {
-            return <h6>{party.players.length} player(s) are playing</h6>
+            return <h6>{game.players.length} player(s) are playing</h6>
         }
     }
 
-    partyCards(e){
+    gameCards(e){
 
         return (
-            this.state.parties.map(party => {
+            this.state.games.map(game => {
             return (
                 <div className="card bg-light">
                     <div className="card-header ">
-                        {this.gamePlayers(party)}
+                        {this.gamePlayers(game)}
                     </div>
                     <div className="card-body">
                         <div className="row">
                             <div className='col'>
                                 <p className="card-text">
-                                    {party.creator.name +' created this game on '+party.date.slice(0,10)}
+                                    {game.creator.name +' created this game on '+game.date.slice(0,10)}
                                 </p>
                             </div>
                             <div className='col'>
-                                {party.isEnded ? '' : 
+                                {game.isEnded ? '' : 
                                 <button 
                                 type="button" 
                                 className="btn btn-primary btn-block" 
-                                onClick={() => this.onClickJoin(party._id)}>
+                                onClick={() => this.onClickJoin(game._id)}>
                                     Join Game
                                 </button>}
                             </div>
@@ -123,17 +121,16 @@ export default class Dashboard extends Component {
         }))
     }
     
-    onClickJoin(partyID){
-        this.context.setGameID(partyID);
-        localStorage.setItem('partyID', partyID);
+    onClickJoin(gameID){
+        this.context.setGameID(gameID);
         this.props.history.push("/ingame/")
     }
 
-    onClickDelete(partyID){
+    onClickDelete(gameID){
         axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/delete', {
             params: {
               token: this.state.token,
-              partyID: partyID
+              gameID: gameID
             }}).then(() => {
                 axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/dash', {
                     params: {
@@ -141,7 +138,7 @@ export default class Dashboard extends Component {
                     }})
                 .then(res => {
                     this.setState({
-                        parties: res.data.parties
+                        games: res.data.games
                     })
                 }
                 )
@@ -151,8 +148,8 @@ export default class Dashboard extends Component {
             })
     }
 
-    numberParty(e){
-        var n = this.state.parties.length
+    numberGame(e){
+        var n = this.state.games.length
         
         var sentence = ''
         
@@ -195,7 +192,7 @@ export default class Dashboard extends Component {
                     <div className="col">
                     <div className="row">
                         <div className="col">
-                            <button type="button" className="btn btn-info btn-block" onClick={this.newParty}>New Game</button>
+                            <button type="button" className="btn btn-info btn-block" onClick={this.newGame}>New Game</button>
                         </div>
                         {!this.state.isAdmin ? '' :
                         <div className="col">
@@ -220,8 +217,8 @@ export default class Dashboard extends Component {
                 </div>
                 </div>
 
-                <p>{ this.numberParty() }</p>
-                <p>{ this.partyCards() }</p>
+                <p>{ this.numberGame() }</p>
+                <p>{ this.gameCards() }</p>
                 
             </div>
         )

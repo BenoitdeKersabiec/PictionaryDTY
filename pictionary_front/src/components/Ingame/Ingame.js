@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
-import {SliderPicker} from 'react-color';
+import {CirclePicker} from 'react-color';
 import socketIOClient from 'socket.io-client';
 import Tool from './Tool';
 import MessageBox from './MessageBox/MessageBox';
 import Messages from './Messages/Messages';
 import PlayerList from './PlayerList/PlayerList';
 import Rodal from 'rodal';
-import { contextUserData } from '../../Context'
-
+import { contextUserData } from '../../Context';
 
 
 import 'rodal/lib/rodal.css';
@@ -53,7 +52,7 @@ export default class Ingame extends Component {
             prevY: 0,
             cursors: [],
             name: '',
-            partyID: '',
+            gameID: '',
             token: ''
         }
     }
@@ -68,7 +67,7 @@ export default class Ingame extends Component {
         if(!gameID){
             this.props.history.push("/dashboard")
         }
-        this.setState({token: token, partyID: gameID})
+        this.setState({token: token, gameID: gameID})
 
         // SocketIo communication init
         this.socket = socketIOClient(ioAdress);
@@ -77,7 +76,7 @@ export default class Ingame extends Component {
             this.setState({players: playerList})
         });
 
-        this.socket.emit('new-user', {token: token, partyID: gameID})
+        this.socket.emit('new-user', {token: token, gameID: gameID})
 
         this.socket.on("newChatMessage", ({ message })=> {
             this.setState({messages: [message,...this.state.messages]})
@@ -97,7 +96,6 @@ export default class Ingame extends Component {
         });
 
         this.socket.on("isEnded", data => {
-            console.log('PartyEnded')
             this.setState({isEnded: data.isEnded})
         })
 
@@ -145,7 +143,7 @@ export default class Ingame extends Component {
     }
 
     sendMessage = ({message}) => {
-       this.socket.emit("newChatMessage", {message, token:this.state.token,partyID: this.state.partyID})
+       this.socket.emit("newChatMessage", {message, token:this.state.token,gameID: this.state.gameID})
     }
     
     handleNameInput(e){
@@ -162,7 +160,7 @@ export default class Ingame extends Component {
 
     handleUpdatePlayers(e){
         e.preventDefault()
-        this.socket.emit('getPlayerList', {partyID: this.state.partyID})
+        this.socket.emit('getPlayerList', {gameID: this.state.gameID})
     }
 
     
@@ -181,7 +179,7 @@ export default class Ingame extends Component {
                         lineWidth: this.state.brushSize,
                         lineColor: this.state.brushColor,
                         lineCoordinates: [this.state.prevX-left, this.state.prevY-top, this.state.mouseX - left, this.state.mouseY - top],
-                        partyID: this.state.partyID
+                        gameID: this.state.gameID
                     });
                     break;
                 case 'eraser':
@@ -189,7 +187,7 @@ export default class Ingame extends Component {
                         lineWidth: this.state.brushSize,
                         lineColor: {r: 255, g:255, b:255, a: this.state.brushColor.a},
                         lineCoordinates: [this.state.prevX-left, this.state.prevY-top, this.state.mouseX - left, this.state.mouseY - top],
-                        partyID: this.state.partyID
+                        gameID: this.state.gameID
                     });
                     break;
                 default:
@@ -209,7 +207,7 @@ export default class Ingame extends Component {
         this.socket.emit('cursor', {
             x: this.state.mouseX,
             y: this.state.mouseY,
-            partyID: this.state.partyID
+            gameID: this.state.gameID
         });
     }
 
@@ -227,13 +225,13 @@ export default class Ingame extends Component {
 
     choosenWord(ind){
         const word = this.state.randWords[ind].word;
-        this.socket.emit('wordChoosen', {word: word, partyID: this.state.partyID})
+        this.socket.emit('wordChoosen', {word: word, gameID: this.state.gameID})
         this.setState({word: word})
     }
 
     handleStartGame(e){
         e.preventDefault()
-        this.socket.emit('startGame', {gameID: this.state.partyID})
+        this.socket.emit('startGame', {gameID: this.state.gameID})
     }
 
     displayWinner(){
@@ -288,6 +286,8 @@ export default class Ingame extends Component {
     }
 
     render() {
+        const colorPicker = ["#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#ffffff", "#03a9f4", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#cddc39", "#888888", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#795548", "#607d8b", "#000000"]
+
         return (
             <div>            
             <div className="row">
@@ -313,41 +313,53 @@ export default class Ingame extends Component {
                     width={canvasWidth.toString()} 
                     height={canvasHeight.toString()}
                     ref={this.display}
-                    style = {{border: "1px solid black"}}
+                    style = {{border: "4px solid grey", backgroundColor: 'white'}}
                     onMouseMove={this.handleDisplayMouseMove.bind(this)}
                     onMouseDown={this.handleDisplayMouseDown.bind(this)}
                     onMouseUp={this.handleDisplayMouseUp.bind(this)}></canvas>
                     </div>: 
                     this.displayStartButton()}
 
-                    {this.state.isDrawing ? <div className="toolbox">
-                        <SliderPicker 
-                            color={this.state.brushColor} 
-                            onChangeComplete={this.handleColorChange.bind(this)}>
-                            </SliderPicker>
-                        <Tool 
-                            name="Eraser" 
-                            currentTool={this.state.toolId}
-                            toolId="eraser" 
-                            onSelect={this.handleToolClick.bind(this)}/>
-                        <Tool 
-                            name="Pen" 
-                            currentTool={this.state.toolId}
-                            toolId="pen" 
-                            onSelect={this.handleToolClick.bind(this)}/>
-                        <code className="brush-size-label">Size ({String(this.state.brushSize)})</code>
-                        <input 
+                    {this.state.isDrawing ? 
+                    <div className="toolbox" style={{paddingLeft:'30px'}}>
+                        <div className='row'>
+                            <div className='column'>
+                                <CirclePicker 
+                                colors={colorPicker}
+                                width='294px'
+                                color={this.state.brushColor} 
+                                onChangeComplete={this.handleColorChange.bind(this)}/>
+                            </div>
+                            <div className='column' style={{paddingLeft:'50px'}}>
+                                <div className='row' style={{paddingTop: '10px'}}>
+                                    <Tool 
+                                    name="Pen" 
+                                    currentTool={this.state.toolId}
+                                    toolId="pen" 
+                                    onSelect={this.handleToolClick.bind(this)}/>
+                                </div>
+                                <div className='row' style={{paddingTop: '10px'}}>
+                                    <Tool 
+                                    name="Eraser" 
+                                    currentTool={this.state.toolId}
+                                    toolId="eraser" 
+                                    onSelect={this.handleToolClick.bind(this)}/>
+                                </div>
+                            </div>
+                        </div>
+                        <div className='row' style={{paddingTop: '10px'}}>
+                            <h8>Width</h8>
+                            <input 
+
+                            className='custom-range'
                             onChange={this.handleBrushResize.bind(this)}
                             value={this.state.brushSize}
                             type='range'
                             min='1'
-                            max='50'/>
-                        <span 
-                            className="brush-size-indicator" 
-                            style={{width: this.state.brushSize + 'px',
-                                    height: this.state.brushSize + 'px',
-                                    bachground: this.state.brushColor}}>
-                            </span>
+                            max='50'
+                            style={{width: '300px', paddingLeft: '15px'}}/>
+                        </div>
+
                     </div> : ''}
                 </div>
             </div>
@@ -366,27 +378,28 @@ export default class Ingame extends Component {
                 <PlayerList playerList={this.state.players} />
             </div>
             </div>
-            <Rodal visible={this.state.isPaused} showCloseButton={false}>
+            
+            <Rodal visible={this.state.isPaused} showCloseButton={false} customStyles={{backgroundColor:'#333'}} measure= 'px' height='100' width='500'>
                 {this.state.isDrawing ?
                 <div>
-                    Choose a word among this three one
+                    <h4>Choose a word</h4>
                     <div className = 'row'>
-                    <div className="column" style={{width: '33%'}}>
-                        <button type="button" className="btn btn-primary" onClick={() =>
+                    <div className="column" style={{width: '33%', paddingLeft: '10%', paddingRight: '5%'}}>
+                        <button type="button" className="btn btn-primary btn-block" onClick={() =>
                             this.choosenWord(0)
                             }>
                             {this.state.randWords[0].word}
                         </button>
                     </div>
-                    <div className="column" style={{width: '33%'}}>
-                        <button type="button" className="btn btn-primary" onClick={() =>
+                    <div className="column" style={{width: '33%', paddingLeft: '5%', paddingRight: '5%'}}>
+                        <button type="button" className="btn btn-primary btn-block" onClick={() =>
                             this.choosenWord(1)
                             }>
                             {this.state.randWords[1].word}
                         </button>
                     </div>
-                    <div className="column" style={{width: '33%'}}>
-                        <button type="button" className="btn btn-primary" onClick={() =>
+                    <div className="column" style={{width: '33%', paddingLeft: '5%', paddingRight: '10%'}}>
+                        <button type="button" className="btn btn-primary btn-block" onClick={() =>
                             this.choosenWord(2)
                             }>
                             {this.state.randWords[2].word}
@@ -395,8 +408,8 @@ export default class Ingame extends Component {
                     </div>
                 </div>
                 :<h4>{this.state.DrawerName} is choosing a word</h4>}
-            </Rodal>
-            <Rodal visible={this.state.isEnded} showCloseButton={false}>
+                </Rodal>
+            <Rodal visible={this.state.isEnded} showCloseButton={false} measure='px' height={(200 + this.state.players.length*50).toString()} customStyles={{backgroundColor:'#333'}}>
                 <p>{this.displayWinner()}</p>
                 <PlayerList playerList={this.state.players} />
                 <button type="button" className="btn btn-primary" onClick={() => {
