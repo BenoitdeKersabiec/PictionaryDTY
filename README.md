@@ -49,6 +49,6 @@ Linter used is ESlint
 
 To log in as an admin, use:
 <br/>
-email: admin@admin
+**email:** admin@admin
 <br/>
-password: adminSession
+**password:** adminSession
