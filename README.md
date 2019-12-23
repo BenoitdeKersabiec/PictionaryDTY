@@ -7,7 +7,7 @@ Author: Benoit Sioc'han de Kersabiec
 ## Description: 
 This project has been made to be admitted to the Digital Tech Year.
 It is a Pictionary Game. Users can login/register and then play. 
-Once a user is logged in, he can see all the games he has created and join a current game.
+Once a user is logged in, he can see all the games he has created and join an ongoing game.
 A game can start when there is at least 2 players. A 'drawer' is choosen among the players.
 He chooses a word among three propositions and start to draw. The other players take guesses.
 Once all the other players have guessed or once the time has elapsed (after 90s), the drawer changes and the cycle restarts.
