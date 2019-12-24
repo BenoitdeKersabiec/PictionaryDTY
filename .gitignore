@@ -1,0 +1,4 @@
+.gitignore
+pictionary_back/node_modules
+.gitignore
+pictionary_front/node_modules
