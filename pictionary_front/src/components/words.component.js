@@ -124,7 +124,15 @@ export default withRouter(class Words extends Component {
               token: this.state.token,
               wordId: wordId
             }}).then(res => {
-                this.props.history.push('/words/')
+                axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT + '/word/words', {
+                    params: {
+                    token: this.state.token
+                    }})
+                .then(res => this.setState({words: res.data})
+                )
+                .catch((error) => {
+                    console.log(error);
+                })
             })
     }
 
