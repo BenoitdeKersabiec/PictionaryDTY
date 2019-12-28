@@ -35,7 +35,7 @@ This project is using the MERN stack:
 * NodeJS (BackEnd side)
 <br/>
 <br/>
-The database is in the cloud (MongoDB Atlas), elle est donc déjà initialisée
+The database is in the cloud (MongoDB Atlas), thus it's already initialized
 <br/>
 Mongoose is used to deal with the mongoDB database
 <br/>
