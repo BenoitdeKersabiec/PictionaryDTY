@@ -14,7 +14,10 @@ Once all the other players have guessed or once the time has elapsed (after 90s)
 A game globally end when one player hits 500 points.
 
 ## Setup
+An internet connection is needed
+<br/>
 Ensure you have nodeJS installed (version 10.18.0 or heigher)
+
 
 1. Clone the repository
 2. Go in the pictionary_back folder
