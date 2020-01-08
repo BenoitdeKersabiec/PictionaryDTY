@@ -10,7 +10,6 @@ const Word = require('../models/Word');
 
 // Create new word
 router.post('/newword', (req,res) => {
-    console.log(req.body.word)
     const token = req.body.token;
     if(jwtUtils.verifyToken(token) != null){
         var user = jwtUtils.getUserData(token);
@@ -20,7 +19,6 @@ router.post('/newword', (req,res) => {
                 if (word.length) {
                     res.json({msg: 'Word already in database'})
                 } else {
-                    console.log('here')
                     const newWord = new Word({
                         word: req.body.word.toLowerCase()
                     });
