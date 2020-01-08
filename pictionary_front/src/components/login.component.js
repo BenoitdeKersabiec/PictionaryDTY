@@ -58,7 +58,7 @@ export default class Login extends Component {
     displayAlert(){
         if(this.context.flashMsg.msg){
             return (
-                    <div className={(`alert alert-${this.context.flashMsg.type}`)} role="alert">
+                    <div className={(`alert alert-${this.context.flashMsg.type}`)} role="alert" style={{textAlign: 'center'}}>
                     {this.context.flashMsg.msg}
                     </div>
                 )

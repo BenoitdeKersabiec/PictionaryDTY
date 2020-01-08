@@ -10,18 +10,27 @@ const Word = require('../models/Word');
 
 // Create new word
 router.post('/newword', (req,res) => {
+    console.log(req.body.word)
     const token = req.body.token;
     if(jwtUtils.verifyToken(token) != null){
         var user = jwtUtils.getUserData(token);
         if (user.isAdmin){
-            const newWord = new Word({
-                word: req.body.word.toLowerCase()
+            Word.find({word: req.body.word.toLowerCase()}).then(word => {
+                
+                if (word.length) {
+                    res.json({msg: 'Word already in database'})
+                } else {
+                    console.log('here')
+                    const newWord = new Word({
+                        word: req.body.word.toLowerCase()
+                    });
+                    newWord.save()
+                    .then(() => {
+                        res.json({msg: 'Word added successfully'});
+                    })
+                    .catch(err => {console.log(err);});
+                }
             });
-            newWord.save()
-            .then(() => {
-                res.json({msg: 'success'});
-            })
-            .catch(err => {console.log(err);});
         }
     }
 })

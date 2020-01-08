@@ -3,7 +3,6 @@ import axios from 'axios';
 import { contextUserData } from '../Context'
 import jwt from 'jsonwebtoken';
 import { withRouter } from "react-router-dom";
-
 import './addtop.css'
 
 
@@ -22,7 +21,8 @@ export default withRouter(class Words extends Component {
         this.state = {
             token:'',
             words: [],
-            newWord:''
+            newWord:'',
+            addWordState: {}
         }
     }
 
@@ -151,7 +151,11 @@ export default withRouter(class Words extends Component {
         if (newWord.word !==''){
             axios.post(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT +  '/word/newword', newWord)
             .then(res => {
-                if (res.data.msg === 'success'){
+                console.log('HEY')
+                if (res.data.msg === 'Word added successfully'){
+                    
+                    this.setState({newWord: '', addWordState: {type: 'success', msg: res.data.msg}});
+                    
                     axios.get(process.env.REACT_APP_SERVER_ADDRESS + process.env.REACT_APP_SERVER_PORT +  '/word/words', {
                         params: {
                         token: this.state.token
@@ -161,10 +165,25 @@ export default withRouter(class Words extends Component {
                     .catch((error) => {
                         console.log(error);
                     })
+                } else {
+                    this.setState({addWordState: {type: 'warning', msg: res.data.msg}});
                 }
             });
         }
             
+    }
+
+    displayAlert(){
+        if(this.state.addWordState){
+            return (
+                    <div className={(`alert alert-${this.state.addWordState.type}`)} role="alert" style={{width: '50%', textAlign: 'center', margin: 'auto', marginTop: '10px'}}>
+                    {this.state.addWordState.msg}
+                    </div>
+                )
+        } else {
+            return <div></div>
+        }
+        
     }
 
 
@@ -194,7 +213,7 @@ export default withRouter(class Words extends Component {
                                 onChange={this.onChangeWord}
                                 />
                                 <button 
-                                type="submit" 
+                                type="button" 
                                 className="btn btn-secondary" 
                                 onClick={this.onSubmit}>
                                     Add a word
@@ -204,6 +223,7 @@ export default withRouter(class Words extends Component {
                     </div>
                     </div>
                 </div>
+                {this.displayAlert()}
                 <div>
                     <ul>{ this.displayWords() }</ul>
                 </div>
