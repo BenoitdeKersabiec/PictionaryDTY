@@ -113,7 +113,7 @@ export default class Register extends Component {
                   value={this.state.name}
                   onChange={this.onChangeName}
                 />
-                {this.state.name?'':<small className="text-danger">Can't be empty</small>}
+                {!this.state.email.length || this.state.name?'':<small className="text-danger">Can't be empty</small>}
               </div>
               <div className="form-group">
                 <label htmlFor="email">Email</label>
@@ -123,7 +123,7 @@ export default class Register extends Component {
                   value={this.state.email}
                   onChange={this.onChangeEmail}
                 />
-                {EMAIL_REGEX.test(this.state.email) ? '' : 
+                {!this.state.email.length || EMAIL_REGEX.test(this.state.email) ? '' : 
                 <small className="text-danger">Email invalid</small>}
               </div>
               <div className="form-group">
@@ -134,7 +134,7 @@ export default class Register extends Component {
                   value={this.state.password}
                   onChange={this.onChangePassword}
                 />
-                {(this.state.password.length>=6) ? '' : <small className="text-danger">Password should be at least 6 characters</small>}
+                {(!this.state.password.length || this.state.password.length>=6) ? '' : <small className="text-danger">Password should be at least 6 characters</small>}
                 
               </div>
               <div className="form-group">
