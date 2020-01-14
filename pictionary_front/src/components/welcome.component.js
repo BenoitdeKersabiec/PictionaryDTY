@@ -1,5 +1,6 @@
 // eslint-disable-next-line
 import React, {Component} from "react";
+import logo from './logoWelcome.png'
 
 export default class CreateUser extends Component {
   render() {
@@ -7,7 +8,8 @@ export default class CreateUser extends Component {
       <div className="row mt-5">
         <div className="col-md-6 m-auto">
           <div className="card card-body text-center">
-            <h1><i className="fab fa-node-js fa-3x"></i></h1>
+            <h1>Pictionary</h1>
+            <hr></hr>
             <p>Create an account or login</p>
             <a href="/users/register" className="btn btn-primary btn-block mb-2"
             >Register</a
